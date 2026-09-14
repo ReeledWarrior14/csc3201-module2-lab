@@ -29,14 +29,18 @@ def ECB_encrypt(contents, key):
 
 def CBC_encrypt(contents, key, iv):
     total = b''
-    # separate into 128 bit blocks
-    while len(contents) > 0:
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        block = contents[:16]
-        contents = contents[16:]
+    previous_block = iv
+    cipher = AES.new(key, AES.MODE_ECB)
+
+    for i in range(0, len(contents), 16):
+        block = contents[i:i+16]
+        # XOR with previous block
+        block = bytes(a ^ b for a, b in zip(block, previous_block))
+
         ciphertext = cipher.encrypt(block)
+
         total += ciphertext
-        iv = ciphertext  # Update IV to the last ciphertext block for CBC mode
+        previous_block = ciphertext
 
     return total
 
